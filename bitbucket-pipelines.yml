@@ -1,0 +1,41 @@
+definitions:
+
+  steps:
+    - step: &e2e-test
+        image: cypress/browsers:node14.17.6-chrome100-ff98
+        name: Run e2e tests
+        caches:
+          - node
+          - cypress
+          - angular
+        script:
+          - npm i
+          - npm start &
+          - npx cypress run --browser firefox
+
+    - step: &build
+        name: Build and Deploy
+        runs-on: 
+          - 'self.hosted'
+        script:
+          - pipe: atlassian/ssh-run:0.4.1
+            variables:
+              SSH_USER: "ubuntu"
+              SERVER: "${VPS_IP}"
+              MODE: "script"
+              COMMAND: "./bin/build.sh"
+
+pipelines:
+  custom:
+    1-run-e2e:
+      - step: *e2e-test
+
+  branches:
+    master:
+      - step: *build
+
+definitions:
+  caches:
+    npm: $HOME/.npm
+    cypress: $HOME/.cache/Cypress
+    angular: .angular/cache
