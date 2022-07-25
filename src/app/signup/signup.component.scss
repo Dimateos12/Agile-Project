@@ -1,0 +1,29 @@
+.example-radio-button {
+  margin-left: 7px;
+}
+mat-grid-tile {
+  background: #fafafa;
+}
+
+.ml-1 {
+  margin-left: 1%;
+}
+.ml-2 {
+  margin-left: 2%;
+}
+.width-46 {
+  width: 46%;
+}
+
+:host {
+
+  ::ng-deep mat-form-field {
+    width: 100%;
+  }
+
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}

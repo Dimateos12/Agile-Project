@@ -1,0 +1,447 @@
+<ng-container *ngIf="$project | async as project">
+  <div class="row">
+    <div class="col-12">
+      <mat-card [ngClass]="{ edit: edit, invalid: projectDetailsFg.invalid }">
+        <mat-card-header>
+          <mat-card-title class="mb-4">BASIC PROJECT INFORMATIONS</mat-card-title>
+          <div class="ms-auto">
+            <app-edit-btn-group *ngIf="user && userSvc.isManager(user)" [edit]="edit" (save)="save(project._id.$oid)"
+              (cancel)="initForm(project); toggleEdit()" (toggleEdit)="toggleEdit()"></app-edit-btn-group>
+          </div>
+        </mat-card-header>
+        <mat-card-content [formGroup]="projectDetailsFg">
+          <ng-container *ngIf="!loading; else loadingTpl">
+            <div class="row">
+              <!-- Left -->
+              <div class="col-12 col-md-9">
+                <div class="row">
+                  <div class="col-12 col-md-6 status-chip">
+                    <div class="mb-3" *ngIf="!edit">
+                      <mat-chip-list formControlName="status" matInput placeholder="Status">
+                        <span class="mx-2 text-underline">Project status:</span>
+                        <mat-chip>{{ project.status }}</mat-chip>
+                        <span class="mx-2 text-underline">Project type:</span>
+                        <mat-chip>{{ project.type }}</mat-chip>
+                      </mat-chip-list>
+                    </div>
+
+                    <mat-form-field *ngIf="edit" [appearance]="appearance">
+                      <mat-label>Status</mat-label>
+
+                      <mat-select formControlName="status" matInput placeholder="Status" [value]="project.status">
+                        <mat-option [value]="projectStatus.OPEN">OPEN</mat-option>
+                        <mat-option [value]="projectStatus.CLOSED">CLOSED</mat-option>
+                        <mat-option [value]="projectStatus.CANCELLED">CANCELLED</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-12 col-md-2">
+                    <mat-form-field [appearance]="'standard'">
+                      <mat-label>Code</mat-label>
+                      <input formControlName="code" readonly matInput placeholder="Code" />
+                    </mat-form-field>
+                  </div>
+                  <div class="col-12 col-md-5">
+                    <mat-form-field *ngIf="!edit; else editOwner" [appearance]="appearance">
+                      <mat-label>Owner</mat-label>
+                      <input formControlName="owner" [readonly]="!edit" matInput placeholder="Owner" />
+                    </mat-form-field>
+                    <ng-template #editOwner>
+                      <mat-form-field *ngIf="$researchers | async as owners" class="col-12 col-lg-6"
+                        [appearance]="appearance">
+                        <mat-label>Owner</mat-label>
+                        <mat-select formControlName="owner">
+                          <mat-option *ngFor="let owner of owners" [value]="owner._id">
+                            {{ owner._id }}
+                          </mat-option>
+                        </mat-select>
+                        <mat-error *ngIf="projectDetailsFg.controls['owner'].invalid">
+                          Please provide an owner for the project
+                        </mat-error>
+                      </mat-form-field>
+                    </ng-template>
+                  </div>
+                </div>
+                <div class="col-12 col-9">
+                  <mat-form-field [appearance]="appearance">
+                    <mat-label>Title</mat-label>
+                    <input formControlName="title" [readonly]="!edit" matInput placeholder="Title" />
+                  </mat-form-field>
+                </div>
+              </div>
+
+              <div class="logo col-12 col-md-3 d-flex flex-column justify-content-center">
+                <div class="d-flex flex-column align-items-center pb-3">
+                  <div class="d-inline-flex align-items-center">
+                    <!--   <label>Project Logo</label> -->
+                    <!--  <button *ngIf="edit" mat-icon-button>
+                      <mat-icon>edit</mat-icon>
+                    </button> -->
+                  </div>
+                  <app-identicon [seed]="project.code" [size]="150"></app-identicon>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-12">
+                <mat-form-field [appearance]="appearance">
+                  <mat-label>Description</mat-label>
+                  <textarea formControlName="description" cdkTextareaAutosize [readonly]="!edit" matInput
+                    placeholder="Description"></textarea>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-12 col-md-4">
+                <mat-form-field [appearance]="'standard'">
+                  <mat-label>Creation date</mat-label>
+                  <input [value]="
+                      localeDate(project.creationDate?.$date, 'MM/DD/YYYY')
+                    " readonly matInput placeholder="Creation Date" />
+                </mat-form-field>
+              </div>
+              <div class="col-12 col-md-4">
+                <mat-form-field [appearance]="appearance">
+                  <mat-label>Starting date</mat-label>
+                  <input [matDatepicker]="pickerStart" [readonly]="!edit" formControlName="startingDate" matInput />
+                  <mat-datepicker-toggle *ngIf="edit" matSuffix [for]="pickerStart"></mat-datepicker-toggle>
+                  <mat-datepicker #pickerStart></mat-datepicker>
+                </mat-form-field>
+              </div>
+              <div class="col-12 col-md-4">
+                <mat-form-field [appearance]="appearance">
+                  <mat-label>Ending date</mat-label>
+                  <input [matDatepicker]="pickerEnd" [readonly]="!edit" formControlName="endingDate" matInput />
+                  <mat-datepicker-toggle *ngIf="edit" matSuffix [for]="pickerEnd"></mat-datepicker-toggle>
+                  <mat-datepicker #pickerEnd></mat-datepicker>
+                </mat-form-field>
+              </div>
+            </div>
+            <mat-error *ngIf="projectDetailsFg.invalid">Please fill out all required fields</mat-error>
+          </ng-container>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- PARENT PROJECT -->
+  <ng-container *ngIf="project.type === projectType.SUB">
+    <div class="row">
+      <div class="col-12">
+        <mat-card>
+          <mat-card-header class="mb-2">
+            <mat-card-title> PARENT PROJECT </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <ng-container *ngIf="
+                $parentProject | async as parentProject;
+                else noSubProjects
+              ">
+              <app-project-overview-table *ngIf="parentProject; else noSubProjects" [projects]="[parentProject]"
+                [isOverview]="true"></app-project-overview-table>
+            </ng-container>
+            <ng-template #noSubProjects>
+              <p>No subprojects found.</p>
+            </ng-template>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- SUB PROJECTS -->
+  <ng-container *ngIf="project.type === projectType.BASE">
+    <div class="row">
+      <div class="col-12">
+        <mat-card>
+          <mat-card-header class="mb-2">
+            <mat-card-title> SUB PROJECTS </mat-card-title>
+            <ng-container *ngIf="$researchers | async as owners">
+              <div class="ms-auto" *ngIf="$baseProjects | async as baseProjects">
+                <button *ngIf="user && userSvc.isManager(user)" (click)="
+                    openSubProjectAddDialog(project, baseProjects, owners)
+                  " mat-button mat-raised-button color="basic">
+                  Add
+                </button>
+              </div>
+            </ng-container>
+          </mat-card-header>
+          <mat-card-content>
+            <ng-container *ngIf="$subProjects | async as subProjects; else noSubProjects">
+              <app-project-overview-table (removeSubProjectEvent)="removeSubProject($event, project)"
+                *ngIf="subProjects.length; else noSubProjects" [projects]="subProjects">
+              </app-project-overview-table>
+            </ng-container>
+            <ng-template #noSubProjects>
+              <p>No subprojects found.</p>
+            </ng-template>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- PUBLICATIONS -->
+  <ng-container *ngIf="$publications | async as publications">
+    <div class="row">
+      <div class="col-12">
+        <mat-card>
+          <mat-card-header class="mb-2">
+            <mat-card-title> PUBLICATIONS </mat-card-title>
+            <ng-container *ngIf="$researchers | async as owners">
+              <div class="ms-auto" *ngIf="$baseProjects | async as baseProjects">
+                <button *ngIf="user && userSvc.isManager(user)" (click)="
+                    openPublicationAddDialog(project)
+                  " mat-button mat-raised-button color="basic">
+                  Add
+                </button>
+              </div>
+            </ng-container>
+          </mat-card-header>
+          <mat-card-content>
+            <ng-container *ngIf="$projectPublications | async as projectPublications; else noPublications">
+              <app-publication-overview-table [elevated]="false" (removeEvent)="removePublication($event, project)"
+                *ngIf="projectPublications.length; else noPublications" [publications]="projectPublications">
+              </app-publication-overview-table>
+            </ng-container>
+            <ng-template #noPublications>
+              <p>No publications found.</p>
+            </ng-template>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="$researchers | async as researchers">
+
+    <div class="row">
+      <div class="col-12">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title> RESEARCHERS </mat-card-title>
+            <div class="ms-auto" *ngIf="$baseProjects | async as baseProjects">
+              <button *ngIf="
+                user && (userSvc.isManager(user) || isOwner(user, project))
+              " (click)="openResearchersAddDialog(project, researchers)" mat-button mat-raised-button color="basic">
+                Add
+              </button>
+            </div>
+          </mat-card-header>
+          <mat-card-content>
+            <ng-container *ngIf="project.researchers?.length; else noResearchers">
+              <app-user-overview-table (remove)="removeResearcher($event, project)"
+                *ngIf="$projectResearchers | async as projectResearcher" [users]="projectResearcher">
+              </app-user-overview-table>
+            </ng-container>
+            <ng-template #noResearchers>
+              <p>No researchers found.</p>
+            </ng-template>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title> FUNDERS </mat-card-title>
+            <div class="ms-auto" *ngIf="$baseProjects | async as baseProjects">
+              <button *ngIf="
+                user && (userSvc.isManager(user) || isOwner(user, project))
+              " (click)="openFundersAddDialog(project)" mat-button mat-raised-button color="basic">
+                Add
+              </button>
+            </div>
+          </mat-card-header>
+          <mat-card-content>
+            <ng-container *ngIf="project.funders?.length; else noData">
+              <app-user-overview-table (remove)="removeFunder($event, project)" [users]="project.funders">
+              </app-user-overview-table>
+            </ng-container>
+            <ng-template #noData>
+              <p>No funders found.</p>
+            </ng-template>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- ADD-FUNDERS -->
+    <ng-template #addFunderDialogTpl *ngIf="$funders | async as funders">
+      <mat-dialog-content class="mat-typography" [formGroup]="addFunderFg">
+        <h2>Add funder</h2>
+        <mat-tab-group mat-align-tabs="start" [(selectedIndex)]="addFunderTabIdx">
+          <mat-tab label="SIRP User">
+            <div class="py-3">
+              <mat-form-field *ngIf="researchers.length > 0; else noOption" appearance="outline" class="w-100">
+                <mat-label>Select funder</mat-label>
+                <mat-select (selectionChange)="selectedFunder = $event.value">
+                  <mat-option *ngFor="let funder of funders" [value]="funder">{{ funder._id }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <ng-template #noOption>
+                <p>No funder selectable</p>
+              </ng-template>
+            </div>
+          </mat-tab>
+          <mat-tab label="New User">
+            <div class="py-3">
+              <mat-form-field class="w-100" appearance="outline">
+                <mat-label>Email</mat-label>
+                <input formControlName="email" matInput type="email" />
+              </mat-form-field>
+              <mat-form-field class="w-100" appearance="outline">
+                <mat-label>Name</mat-label>
+                <input matInput formControlName="firstName" type="email" />
+              </mat-form-field>
+              <mat-form-field class="w-100" appearance="outline">
+                <mat-label>Surname</mat-label>
+                <input formControlName="lastName" matInput />
+              </mat-form-field>
+            </div>
+            <mat-error>{{addFunderError}}</mat-error>
+          </mat-tab>
+        </mat-tab-group>
+      </mat-dialog-content>
+      <mat-dialog-actions>
+        <button mat-button mat-dialog-close>Cancel</button>
+        <button color="primary" [mat-dialog-close]="true" mat-raised-button>
+          Add
+        </button>
+      </mat-dialog-actions>
+    </ng-template>
+
+    <!-- ADD PUBLICATION -->
+    <ng-template #addPublicationDialogTpl *ngIf="$publications | async as publications">
+      <mat-dialog-content class="mat-typography" style="min-width: 80vw;" [formGroup]="addPublicationFg">
+        <h2>Add publication</h2>
+        <div class="py-3">
+          <mat-form-field *ngIf="researchers.length > 0; else noOption" appearance="outline" class="w-100">
+            <mat-label>Select publication</mat-label>
+            <mat-select formControlName="publication">
+              <mat-option *ngFor="let publication of publications" [value]="publication">{{ publication.title }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <ng-template #noOption>
+            <p>No funder selectable</p>
+          </ng-template>
+        </div>
+      </mat-dialog-content>
+      <mat-dialog-actions>
+        <button mat-button mat-dialog-close>Cancel</button>
+        <button color="primary" [mat-dialog-close]="true" mat-raised-button>
+          Add
+        </button>
+      </mat-dialog-actions>
+    </ng-template>
+  </ng-container>
+
+  <div class="row">
+    <div class="col-12">
+      <mat-card>
+
+        <mat-card-title> DESCRIPTION & BUDGET INFORMATIONS </mat-card-title>
+        <mat-card-header  class="mb-2">
+          <ng-container *ngIf="$researchers | async as owners">
+            <div
+              class="ms-auto"
+              *ngIf="$baseProjects | async as baseProjects"
+            >
+              <button
+              *ngIf="user && userSvc.isManager(user)"
+                (click)="openBudgetUpdateDialog(project)"
+                mat-button
+                mat-raised-button
+                color="basic"
+              >
+                Edit 
+              </button>
+            </div>
+          </ng-container>
+        </mat-card-header>
+        
+        <div class="row">
+          <div class="col-12">
+            <mat-form-field [appearance]="appearance">
+              <mat-label>Description</mat-label>
+              <textarea
+                formControlName="description"
+                cdkTextareaAutosize
+                [readonly]="!edit"
+                value={{project.budget?.description}}
+                matInput
+                placeholder="Description"
+              ></textarea>
+             </mat-form-field>
+          </div>
+        </div>  
+        <div class="col-12 col-md-2">
+          <mat-form-field [appearance]="appearance">
+            <mat-label>Amount</mat-label>
+            <textarea
+              cdkTextareaAutosize
+              [readonly]="!edit"
+              value={{project.budget?.generalAmount}}
+              matInput
+              placeholder="Description"
+            ></textarea>
+          </mat-form-field>
+        </div>
+      </mat-card>
+    </div>
+  </div>
+
+
+  <div class="row">
+    <div class="col-12">
+      <mat-card>
+        <mat-card-title> SPENDING REQUESTS </mat-card-title>
+        <mat-card-content>
+          <p>No spending request found.</p>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <mat-card>
+        <mat-card-title> DOCUMENTS </mat-card-title>
+        <mat-card-content> </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <mat-card>
+        <mat-card-title> SUB PROJECTS LIST </mat-card-title>
+        <mat-card-content> </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <mat-card>
+        <mat-card-title> MILESTONES </mat-card-title>
+        <mat-card-content> </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</ng-container>
+
+<ng-template #loadingTpl>
+  <div class="d-flex justify-content-center">
+    <mat-progress-spinner mode="indeterminate" diameter="35"></mat-progress-spinner>
+  </div>
+</ng-template>

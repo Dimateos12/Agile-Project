@@ -1,0 +1,62 @@
+<mat-toolbar id="top-bar">
+  <ng-content [select]="sidenavToggle"></ng-content>
+  <a mat-button routerLink="">SIRP</a>
+
+  <div class="spacer"></div>
+  <div class="d-none d-sm-block">
+    <a mat-button routerLink="users">Users</a>
+    <a mat-button routerLink="projects">Projects</a>
+    <a mat-button routerLink="publications">Publications</a>
+
+    <ng-container *ngIf="isAuthenticated && user">
+      <button *ngIf="userSvc.isManager(user)" mat-button #trigger="matMenuTrigger" [matMenuTriggerFor]="menuManager">
+        Manage
+      </button>
+      <mat-menu #menuManager="matMenu">
+        <span (mouseleave)="closeMenu(menuManager)">
+          <button mat-menu-item routerLink="manage/projects">Projects</button>
+          <button mat-menu-item routerLink="manage/publications">
+            Publications
+          </button>
+        </span>
+      </mat-menu>
+
+      <button *ngIf="userSvc.isResearcher(user) || userSvc.isFunder(user)" mat-button #trigger="matMenuTrigger"
+        [matMenuTriggerFor]="menuResearcher">
+        Personal Area
+      </button>
+      <mat-menu #menuResearcher="matMenu">
+        <span (mouseleave)="closeMenu(menuResearcher)">
+          <button mat-menu-item routerLink="account/projects"> My Projects</button>
+          <button mat-menu-item routerLink="account/publications">
+            My Publications
+          </button>
+        </span>
+      </mat-menu>
+
+    </ng-container>
+
+    <ng-container *ngIf="isAuthenticated; else notAuth">
+      <span class="ms-2 user-info" *ngIf="user && user.profile?.firstName">
+        <a id="user-avatar" class="link cursor-pointer" [routerLink]="['profile', user._id]">
+          <img class="rounded-circle me-2" alt="project logo" [src]="
+              'https://ui-avatars.com/api/?name=' +
+              user.profile.firstName +
+              '+' +
+              user.profile.lastName +
+              '&size=30'
+            " />
+        </a>
+      </span>
+      <button id="logout-btn" mat-icon-button (click)="logout()">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </ng-container>
+
+    <ng-template #notAuth>
+      <a id="login-btn" mat-icon-button routerLink="login">
+        <mat-icon>login</mat-icon>
+      </a>
+    </ng-template>
+  </div>
+</mat-toolbar>

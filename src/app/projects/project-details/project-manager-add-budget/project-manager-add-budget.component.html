@@ -1,0 +1,23 @@
+<h2 mat-dialog-title>Update Budget</h2>
+
+<div class="form-group" [formGroup]="updateBudgetFg">
+  <div class="form-row">
+    <mat-form-field class="example-full-width" appearance="fill" >
+        <mat-label>Edit Description</mat-label>
+        <input matInput placeholder="Add description"  formControlName="description">
+    </mat-form-field>
+  </div>
+  <div class="form-row">
+
+    <mat-form-field class="example-full-width" appearance="fill" >
+        <mat-label>Edit General Amount</mat-label>
+        <input matInput placeholder="Add amount" formControlName="generalAmount">
+    </mat-form-field>
+  </div>
+ 
+
+  <button class="mr-2" mat-button mat-dialog-close cdkFocusInitial>Cancel</button>
+  <button color="primary" class="mx-2" mat-button mat-raised-button (click)="updateBudget()">
+    Update
+  </button>
+</div>

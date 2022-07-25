@@ -1,0 +1,102 @@
+<ng-container *ngIf="$user |async as user">
+    <mat-card [ngClass]="{ edit: edit, invalid: signupFormGrp.invalid }">
+        <mat-card-header>
+            <mat-card-title class="mb-4">USER INFORMATIONS</mat-card-title>
+            <div class="ms-auto" *ngIf="userAuth &&  userAuth._id == user._id">
+                <app-edit-btn-group [edit]="edit" (save)="save(user._id)" (cancel)="initUser(user);  toggleEdit()"
+                    (toggleEdit)="toggleEdit()">
+                </app-edit-btn-group>
+            </div>
+        </mat-card-header>
+
+        <mat-card-content [formGroup]="signupFormGrp">
+            <ng-container *ngIf="!loading; else loadingTpl">
+
+                <div class="row">
+                    <div class="col-12 col-md-6">
+                        <mat-form-field [appearance]="appearance">
+                            <mat-label>First Name</mat-label>
+
+                            <input formControlName="firstName" [readonly]="!edit" matInput placeholder="First Name" />
+
+                        </mat-form-field>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <mat-form-field [appearance]="appearance">
+                            <mat-label>Last Name</mat-label>
+                            <input formControlName="lastName" [readonly]="!edit" matInput placeholder="Last Name" />
+                        </mat-form-field>
+                    </div>
+                </div>
+                <!-- project details component ->  start date  -->
+                <div class="row">
+                    <div class="col-12 col-md-6">
+                        <mat-form-field [appearance]="appearance">
+                            <mat-label>Birthdate</mat-label>
+                            <input formControlName="birthdate" [matDatepicker]="pickerStart" [readonly]="!edit"
+                                placeholder="birthdate" matInput />
+                            <mat-datepicker-toggle *ngIf="edit" matSuffix [for]="pickerStart"></mat-datepicker-toggle>
+                            <mat-datepicker #pickerStart></mat-datepicker>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <mat-form-field [appearance]="'standard'">
+                            <mat-label>Email</mat-label>
+                            <input formControlName="email" readonly matInput placeholder="Email" />
+                        </mat-form-field>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <mat-select-country label="Country *" formControlName="country" [readonly]="!edit"
+                            appearance="standard">
+                        </mat-select-country>
+                    </div>
+                </div>
+            </ng-container>
+        </mat-card-content>
+
+    </mat-card>
+
+    <section class="my-4">
+
+        <ng-container *ngIf="user && isFunder(user)">
+            <div class="row" *ngIf="$funderProjects|async as funderProjects; else loadingTpl">
+                <div class="col-12">
+                    <h2>Funded Projects</h2>
+                    <app-project-overview-table [isOverview]="true" [projects]="funderProjects">
+                    </app-project-overview-table>
+                </div>
+            </div>
+        </ng-container>
+        <ng-container *ngIf="user && isReseracher(user)">
+            <div class="row" *ngIf="$researcherProjects |async as researcherProjects; else loadingTpl">
+                <div class="col-12">
+                    <h1>Researcher Projects</h1>
+                    <app-project-overview-table [public]="true" [elevated]="true" [isOverview]="true" [projects]="researcherProjects">
+                    </app-project-overview-table>
+                </div>
+            </div>
+        </ng-container>
+
+    </section>
+
+    <!-- Publications list  -->
+    <section class="my-4" *ngIf="user && isReseracher(user)">
+        <h1>Publications</h1>
+        <div class="row">
+            <div class="col-12">
+                <app-publications-table [elevated]="true" [public]="true" [hideFilters]="true" [forUser]="user._id">
+                </app-publications-table>
+            </div>
+        </div>
+    </section>
+
+    <ng-template #loadingTpl>
+        <div class="d-flex justify-content-center">
+            <mat-progress-spinner mode="indeterminate" diameter="35"></mat-progress-spinner>
+        </div>
+    </ng-template>

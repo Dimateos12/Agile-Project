@@ -1,0 +1,292 @@
+<ng-container *ngIf="publication">
+    <!-- BASIC INFO -->
+    <app-publication-basic-info [editable]="editable" [publication]="publication" (reloadEvent)="reloadEvent.emit()">
+    </app-publication-basic-info>
+
+    <!-- AUTHORS -->
+    <mat-card class="my-3">
+        <mat-card-header>
+            <mat-card-title class="mb-4">AUTHORS</mat-card-title>
+            <div class="ms-auto" *ngIf="editable">
+                <button (click)="openAddAuthorsDialog()" mat-button mat-raised-button color="basic">
+                    Add
+                </button>
+            </div>
+        </mat-card-header>
+        <mat-card-content>
+            <div class="row">
+                <app-publication-user-overview-table [editable]="editable" [showDelete]="!publication.DOI" [users]="authors"
+                    [isOverview]="false" (deleteEvent)="removeAuthor($event)">
+                </app-publication-user-overview-table>
+            </div>
+        </mat-card-content>
+    </mat-card>
+
+    <!-- ASSERTION -->
+    <mat-card class="my-3">
+        <mat-card-header>
+            <mat-card-title class="mb-4">ASSERTIONS</mat-card-title>
+            <div class="ms-auto" *ngIf="editable">
+                <button (click)="openAddAssertionDialog()" mat-button mat-raised-button color="basic">
+                    Add
+                </button>
+            </div>
+        </mat-card-header>
+        <mat-card-content>
+            <div class="row">
+                <app-publication-assertion-table [editable]="editable" (deleteEvent)="removeEntity('assertion',$event)"
+                    [data]="publication.assertion"></app-publication-assertion-table>
+            </div>
+        </mat-card-content>
+    </mat-card>
+
+    <!-- LINKS -->
+    <mat-card class="my-3">
+        <mat-card-header>
+            <mat-card-title class="mb-4">LINKS</mat-card-title>
+            <div class="ms-auto" *ngIf="editable">
+                <button (click)="openAddLinkDialog()" mat-button mat-raised-button color="basic">
+                    Add
+                </button>
+            </div>
+        </mat-card-header>
+        <mat-card-content>
+            <div class="row">
+                <app-publication-link-table [editable]="editable" (deleteEvent)="removeEntity('link',$event)" [data]="publication.link">
+                </app-publication-link-table>
+            </div>
+        </mat-card-content>
+    </mat-card>
+
+    <!-- REFERENCES -->
+    <mat-card class="my-3">
+        <mat-card-header>
+            <mat-card-title class="mb-4">REFERENCES</mat-card-title>
+            <div class="ms-auto" *ngIf="editable">
+                <button (click)="openAddReferenceDialog()" mat-button mat-raised-button color="basic">
+                    Add
+                </button>
+            </div>
+        </mat-card-header>
+        <mat-card-content>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="mb-3">
+                        <mat-chip-list>
+                            <span class="mx-2 text-underline">Referenced By:</span>
+                            <mat-chip>{{
+                                publication["is-referenced-by-count"] || "n/a"
+                                }}</mat-chip>
+
+                            <span class="mx-2 text-underline">Reference count:</span>
+                            <mat-chip>{{
+                                publication["reference-count"] || "n/a"
+                                }}</mat-chip>
+
+                            <span class="mx-2 text-underline">References count:</span>
+                            <mat-chip>{{
+                                publication["references-count"] || "n/a"
+                                }}</mat-chip>
+
+                            <button class="ms-2" *ngIf="editable" (click)="updateReferencesCounts()" mat-raised-button>Edit</button>
+
+                        </mat-chip-list>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <app-publication-reference-table [editable]="editable" (deleteEvent)="removeEntity('reference',$event)"
+                    [data]="publication.reference">
+                </app-publication-reference-table>
+            </div>
+        </mat-card-content>
+    </mat-card>
+</ng-container>
+
+<!-- ADD-AUTHORS -->
+<ng-template #addAuthorsDialogTpl *ngIf="$researchers | async as researchers">
+    <mat-dialog-content class="mat-typography" [formGroup]="addAuthorFg">
+        <h2>Add author</h2>
+        <mat-tab-group mat-align-tabs="start" [(selectedIndex)]="addAuthorTabIdx">
+            <mat-tab label="Manual">
+                <div class="py-3">
+                    <mat-form-field class="w-100" appearance="outline">
+                        <mat-label>Name</mat-label>
+                        <input matInput formControlName="given" type="email" />
+                    </mat-form-field>
+                    <mat-form-field class="w-100" appearance="outline">
+                        <mat-label>Surname</mat-label>
+                        <input formControlName="family" matInput />
+                    </mat-form-field>
+                    <mat-form-field class="w-100" appearance="outline">
+                        <mat-label>ORCID</mat-label>
+                        <input formControlName="ORCID" matInput />
+                    </mat-form-field>
+                </div>
+            </mat-tab>
+            <mat-tab label="SIRP User">
+                <div class="py-3">
+                    <mat-form-field *ngIf="researchers.length > 0; else noOption" appearance="outline" class="w-100">
+                        <mat-label>Select researcher</mat-label>
+                        <mat-select (selectionChange)="selectedAuthor($event)">
+                            <mat-option *ngFor="let researcher of researchers" [value]="researcher">{{ researcher._id }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+                    <ng-template #noOption>
+                        <p>No researcher selectable</p>
+                    </ng-template>
+                </div>
+            </mat-tab>
+        </mat-tab-group>
+    </mat-dialog-content>
+    <mat-dialog-actions>
+        <button mat-button mat-dialog-close>Cancel</button>
+        <button color="primary" [mat-dialog-close]="true" mat-raised-button>
+            Add
+        </button>
+    </mat-dialog-actions>
+</ng-template>
+
+<!-- ADD-ASSERTION -->
+<ng-template #addAssertionDialogTpl>
+    <mat-dialog-content class="mat-typography" [formGroup]="addAssertionFg">
+        <h2>Add assertion</h2>
+        <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Label</mat-label>
+            <input matInput formControlName="label" type="text" />
+        </mat-form-field>
+        <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Value</mat-label>
+            <input formControlName="value" matInput />
+        </mat-form-field>
+        <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Name</mat-label>
+            <input formControlName="name" matInput />
+        </mat-form-field>
+    </mat-dialog-content>
+    <mat-dialog-actions>
+        <button mat-button mat-dialog-close>Cancel</button>
+        <button color="primary" [mat-dialog-close]="true" mat-raised-button>
+            Add
+        </button>
+    </mat-dialog-actions>
+</ng-template>
+
+<!-- ADD-LINK -->
+<ng-template #addLinkDialogTpl>
+    <mat-dialog-content class="mat-typography" [formGroup]="addLinkFg">
+        <h2>Add link</h2>
+        <mat-form-field class="w-100" appearance="outline">
+            <mat-label>URL</mat-label>
+            <input matInput formControlName="URL" type="url" />
+        </mat-form-field>
+        <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Content-Type</mat-label>
+            <input matInput formControlName="content-type" type="text" />
+        </mat-form-field>
+        <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Content-Version</mat-label>
+            <input matInput formControlName="content-version" type="text" />
+        </mat-form-field>
+        <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Intended-Application</mat-label>
+            <input matInput formControlName="intended-application" type="text" />
+        </mat-form-field>
+
+    </mat-dialog-content>
+    <mat-dialog-actions>
+        <button mat-button mat-dialog-close>Cancel</button>
+        <button color="primary" [mat-dialog-close]="true" mat-raised-button>
+            Add
+        </button>
+    </mat-dialog-actions>
+</ng-template>
+
+<!-- ADD-REFERENCE -->
+<ng-template #addReferenceDialogTpl>
+    <mat-dialog-content class="mat-typography" [formGroup]="addReferenceFg">
+        <h2>Add reference</h2>
+        <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Key</mat-label>
+            <input matInput formControlName="key" type="text" />
+        </mat-form-field>
+        <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Unstructured</mat-label>
+            <input matInput formControlName="unstructured" type="text" />
+        </mat-form-field>
+        <mat-form-field class="w-100" appearance="outline">
+            <mat-label>First-Page</mat-label>
+            <input matInput formControlName="first-page" type="text" />
+        </mat-form-field>
+        <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Article-Title</mat-label>
+            <input matInput formControlName="article-title" type="text" />
+        </mat-form-field>
+        <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Volume</mat-label>
+            <input matInput formControlName="volume" type="text" />
+        </mat-form-field>
+        <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Author</mat-label>
+            <input matInput formControlName="author" type="text" />
+        </mat-form-field>
+        <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Year</mat-label>
+            <input matInput formControlName="year" type="text" />
+        </mat-form-field>
+        <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Journal-Title</mat-label>
+            <input matInput formControlName="journal-title" type="text" />
+        </mat-form-field>
+        <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Series-Title</mat-label>
+            <input matInput formControlName="series-title" type="text" />
+        </mat-form-field>
+        <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Doi-Asserted-By</mat-label>
+            <input matInput formControlName="doi-asserted-by" type="text" />
+        </mat-form-field>
+        <mat-form-field class="w-100" appearance="outline">
+            <mat-label>DOI</mat-label>
+            <input matInput formControlName="DOI" type="text" />
+        </mat-form-field>
+        <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Issue</mat-label>
+            <input matInput formControlName="issue" type="text" />
+        </mat-form-field>
+    </mat-dialog-content>
+    <mat-dialog-actions>
+        <button mat-button mat-dialog-close>Cancel</button>
+        <button color="primary" [mat-dialog-close]="true" mat-raised-button>
+            Add
+        </button>
+    </mat-dialog-actions>
+</ng-template>
+
+<!-- UPDATE-REFERENCE-COUNTS -->
+<ng-template #updateReferencesCountsDialogTpl>
+    <mat-dialog-content class="mat-typography" [formGroup]="updateReferencesCountsFg">
+        <h2>Update references counts</h2>
+        <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Is Referenced By Count</mat-label>
+            <input formControlName="is-referenced-by-count" matInput />
+        </mat-form-field>
+        <mat-form-field class="w-100" appearance="outline">
+            <mat-label>Reference count</mat-label>
+            <input formControlName="reference-count" matInput />
+        </mat-form-field>
+        <mat-form-field class="w-100" appearance="outline">
+            <mat-label>References count</mat-label>
+            <input matInput formControlName="references-count" type="text" />
+        </mat-form-field>
+    </mat-dialog-content>
+    <mat-dialog-actions>
+        <button mat-button mat-dialog-close>Cancel</button>
+        <button color="primary" [mat-dialog-close]="true" mat-raised-button>
+            Add
+        </button>
+    </mat-dialog-actions>
+
+</ng-template>

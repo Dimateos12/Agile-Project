@@ -1,0 +1,11 @@
+h2,
+h1 {
+  text-align: center;
+}
+
+:host ::ng-deep {
+
+    mat-form-field {
+        width: 100%;
+    }
+}

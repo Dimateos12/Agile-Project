@@ -1,0 +1,62 @@
+<!-- <ng-container *ngIf="state$ | async as state">
+    <div class="row">
+        <div class="col-12 col-xl-6 mx-auto">
+            <mat-card id="user-overview">
+                <mat-card-title>
+                    <strong>Home</strong> for <strong>{{state.user?.roles?.join(",")}}</strong> user
+                </mat-card-title>
+                <mat-card-content>
+                    <p>Here you will all public accessible informations like latest project or events</p>
+                    <div class="my-2">
+                        <strong>User info:</strong>
+                        <pre>{{ state | json }}</pre>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+        </div>
+        <div class="col-12 mt-3 mt-xl-0 col-xl-6 mx-auto">
+            <mat-card [dataLoading]="loading">
+                <mat-card-title class="w-100 d-flex align-items-center">
+                    Call a mock service via API
+                    <button id="mock-svc-btn" class="ms-auto" [disabled]="loading" mat-button mat-raised-button color="primary"
+                        (click)="mock()">Call Mock
+                        service</button>
+                </mat-card-title>
+                <mat-card-content>
+                    <div *ngIf="mockResponse" class="my-2">
+                        <strong>Response:</strong>
+                        <pre>{{ mockResponse | json }}</pre>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+        </div>
+    </div>
+</ng-container> -->
+<ng-container *ngIf="projects$ |async as projects; else loadingTpl">
+    <ng-container *ngIf="users$ |async as users; else loadingTpl">
+
+        <section id="latest-publications" class="">
+            <h1>Latest publications</h1>
+            <app-publications-table [elevated]="false" [hideFilters]="true" [public]="true" [limit]="10"
+                [public]="true">
+            </app-publications-table>
+        </section>
+
+        <section id="latest-projects" class="my-5">
+            <h1>Latest projects</h1>
+            <app-project-overview-table [public]="true" [isOverview]="true" [projects]="projects">
+            </app-project-overview-table>
+        </section>
+
+        <section id="latest-researchers" class="my-5">
+            <h1>Latest researchers</h1>
+            <app-user-overview-table [isOverview]="true" [users]="users" [limit]="10"></app-user-overview-table>
+        </section>
+    </ng-container>
+</ng-container>
+
+<ng-template #loadingTpl>
+    <div class="d-flex justify-content-center">
+        <mat-progress-spinner mode="indeterminate" diameter="35"></mat-progress-spinner>
+    </div>
+</ng-template>

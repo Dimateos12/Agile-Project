@@ -1,0 +1,116 @@
+<app-logo></app-logo>
+<section class="my-4 text-center">
+  <h1>Signup</h1>
+</section>
+<section class="my-5 container">
+  <mat-card class="py-5">
+    <form [formGroup]="signupFormGrp">
+      <div class="row">
+        <div class="col-12 col-md-6">
+          <mat-form-field appearance="outline">
+            <mat-label>Name</mat-label>
+            <input formControlName="firstName" matInput>
+            <mat-error *ngIf="signupFormGrp.controls['firstName'].invalid">
+              Please provide a valid first name
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="col-12 col-md-6">
+          <mat-form-field appearance="outline">
+            <mat-label>Surname</mat-label>
+            <input formControlName="lastName" matInput>
+            <mat-error *ngIf="signupFormGrp.controls['lastName'].invalid">
+              Please provide a valid surname
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-12 col-md-6">
+          <!--<mat-form-field appearance="outline">
+            <mat-label>Country</mat-label>
+            <input formControlName="country" matInput>
+            <mat-error *ngIf="signupFormGrp.controls['country'].invalid">
+              Please provide a valid country
+            </mat-error>
+          </mat-form-field>-->
+          <mat-select-country formControlName="country" appearance="outline" label="Country *">
+          </mat-select-country>
+        </div>
+        <div class="col-12 col-md-6">
+          <mat-form-field appearance="outline">
+            <mat-label>Phone</mat-label>
+            <input formControlName="phone" matInput>
+            <mat-error *ngIf="signupFormGrp.controls['phone'].invalid">
+              Please provide a valid phone number
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-12 col-md-6">
+          <mat-form-field appearance="outline">
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="email" type="email">
+            <mat-error *ngIf="signupFormGrp.controls['email'].invalid">
+              Your email is not valid
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="col-12 col-md-6">
+          <mat-form-field appearance="outline">
+            <mat-label>Birthdate</mat-label>
+            <input [matDatepicker]="picker" formControlName="birthdate" matInput>
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+            <mat-error *ngIf="signupFormGrp.controls['birthdate'].invalid">
+              Your birthdate is not valid
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-12 col-md-6">
+          <mat-form-field appearance="outline">
+            <mat-label>Enter your password</mat-label>
+            <input formControlName="password" matInput [type]="hide ? 'password' : 'text'">
+            <button mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'"
+              [attr.aria-pressed]="hide">
+              <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+          </mat-form-field>
+        </div>
+        <div class="col-12 col-md-6">
+          <mat-form-field appearance="outline">
+            <mat-label>Confirm your password</mat-label>
+            <input formControlName="repeatPassword" matInput [type]="hide ? 'password' : 'text'">
+            <button mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'"
+              [attr.aria-pressed]="hide">
+              <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+            <mat-error *ngIf="signupFormGrp.controls['repeatPassword'].invalid">
+              Your passwords do not match
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div *ngIf="!loading else loadingTpl" class=" d-flex justify-content-center">
+        <button class="w-50 login-button mt-3 " type="button" [disabled]="signupFormGrp.invalid || !signupFormGrp.dirty"
+          (click)="signup()" color="primary" mat-raised-button>
+          Signup
+        </button>
+      </div>
+
+      <ng-template #loadingTpl>
+        <div class="d-flex justify-content-center mt-3">
+          <mat-spinner [diameter]="30"></mat-spinner>
+        </div>
+      </ng-template>
+
+    </form>
+  </mat-card>
+</section>

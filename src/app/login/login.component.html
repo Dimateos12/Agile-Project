@@ -1,0 +1,72 @@
+<div id="loginForm" class="shadow p-4 bg-white rounded" style="max-width: 350px">
+  <div class="mb-3 d-flex justify-content-center">
+    <!-- <img class="img-fluid" style="max-width: 80px; max-height: 80px;" src="" /> -->
+    <app-logo></app-logo>
+  </div>
+  <form [formGroup]="loginFormGrp">
+    <div class="mb-3" *ngIf="hasError">
+      <mat-error>Nome utente o password errati</mat-error>
+    </div>
+    <div class="form-group">
+      <mat-form-field class="w-100" appearance="outline">
+        <mat-label>Email</mat-label>
+        <input id="email" autocomplete="email" matInput formControlName="email" type="email">
+        <mat-error *ngIf="loginFormGrp.controls['email'].invalid">
+          Your email is not valid
+        </mat-error>
+      </mat-form-field>
+    </div>
+    <div class="form-group">
+      <mat-form-field class="w-100" appearance="outline" (click)="$event.stopPropagation()"
+        (keyup.enter)="loginFormGrp.valid && login()">
+        <mat-label>Enter your password</mat-label>
+        <input id="password" autocomplete="current-password" formControlName="password" matInput [type]="hide ? 'password' : 'text'">
+        <button tabindex="-1" mat-icon-button matSuffix (click)="hidePassword($event)"
+          [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hide">
+          <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+        </button>
+      </mat-form-field>
+    </div>
+    <div [dataLoading]="isLogging">
+      <button id="login" [disabled]="!loginFormGrp.valid" (click)="login()" class="w-100 login-button my-3" type="button"
+        color="primary" mat-raised-button>Login</button>
+
+      <span>Did you forget your password?</span>
+      <button mat-button [routerLink]="['','passwordreset']">
+        Click here
+      </button>
+
+      <app-divider [marginY]="4"></app-divider>
+
+      <span>Not a sirp user yet?</span>
+      <button class="ms-3" color="primary" mat-button mat-raised-button [routerLink]="['','signup']">
+        Click here
+      </button>
+
+    </div>
+    <!--  
+      <div class="mt-2">
+
+          <mat-list class="pt-0 mt-3">
+          <mat-list-item class="pl-3" style="pointer-events: none; height: 20px">
+            <mat-card-subtitle _ngcontent-bhv-c110="" class="mat-card-subtitle">
+              <small>App: <b>{{ STAGE }}</b> - v{{ VERSION }}</small>
+            </mat-card-subtitle>
+          </mat-list-item>
+
+
+          class="pt-0 mt-0 pl-3"
+          style="pointer-events: none; height: 20px"
+          >
+          <mat-card-subtitle _ngcontent-bhv-c110="" class="mat-card-subtitle">
+            <small>Api:&nbsp;&nbsp;<b style="text-transform: capitalize">{{
+                API_STAGE
+                }}</b>
+              - v{{ API_VERSION }}</small>
+          </mat-card-subtitle>
+          </mat-list-item>
+        </mat-list>
+      </div>
+    -->
+  </form>
+</div>
